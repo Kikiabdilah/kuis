@@ -8,7 +8,26 @@ export const useQuiz = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // Coba muat data kuis dari localStorage
   useEffect(() => {
+    const saved = localStorage.getItem("quizProgress");
+    if (saved) {
+      const parsed = JSON.parse(saved);
+       const isFinished =
+      parsed.currentIndex >= (parsed.questions?.length || 0);
+
+      if(!isFinished){
+        setQuestions(parsed.questions || []);
+        setCurrentIndex(parsed.currentIndex || 0);
+        setAnswers(parsed.answers || []);
+        setLoading(false);
+        return;
+      }else{
+        localStorage.removeItem("quizProgress");
+      }
+    }
+
+    // Kalau tidak ada data tersimpan, ambil dari API
     const loadQuiz = async () => {
       setLoading(true);
       setError("");
@@ -26,6 +45,21 @@ export const useQuiz = () => {
     loadQuiz();
   }, []);
 
+  // Simpan progres ke localStorage setiap kali berubah
+  useEffect(() => {
+    if (questions.length === 0) return;
+
+    localStorage.setItem(
+      "quizProgress",
+      JSON.stringify({
+        questions,
+        currentIndex,
+        answers,
+      })
+    );
+  }, [questions, currentIndex, answers]);
+
+  // Fungsi saat user menjawab
   const handleAnswer = (selectedAnswer) => {
     if (!questions[currentIndex]) return;
 
@@ -45,23 +79,6 @@ export const useQuiz = () => {
     setCurrentIndex((prev) => prev + 1);
   };
 
-  // ✅ Hitung hasil akhir
-  const getResults = () => {
-    const correct = answers.filter((a) => a.isCorrect).length;
-    const incorrect = answers.length - correct;
-    const total = answers.length;
-    return { correct, incorrect, total };
-  };
-
-  // 🔁 Reset kuis (opsional)
-  const resetQuiz = () => {
-    setQuestions([]);
-    setAnswers([]);
-    setCurrentIndex(0);
-    localStorage.removeItem("quizData_multiple_5"); // hapus cache agar ambil soal baru
-    window.location.reload();
-  };
-
   const currentQuestion = questions[currentIndex] || null;
 
   return {
@@ -70,11 +87,8 @@ export const useQuiz = () => {
     currentIndex,
     totalQuestions: questions.length,
     answers,
-    answeredCount: answers.length,
     loading,
     error,
     handleAnswer,
-    getResults,
-    resetQuiz,
   };
 };
