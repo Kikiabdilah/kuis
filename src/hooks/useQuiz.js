@@ -1,4 +1,3 @@
-// src/hooks/useQuiz.js
 import { useEffect, useState } from "react";
 import { fetchQuizViaProxy as fetchQuiz } from "../api/proxyQuiz";
 
@@ -46,6 +45,23 @@ export const useQuiz = () => {
     setCurrentIndex((prev) => prev + 1);
   };
 
+  // ✅ Hitung hasil akhir
+  const getResults = () => {
+    const correct = answers.filter((a) => a.isCorrect).length;
+    const incorrect = answers.length - correct;
+    const total = answers.length;
+    return { correct, incorrect, total };
+  };
+
+  // 🔁 Reset kuis (opsional)
+  const resetQuiz = () => {
+    setQuestions([]);
+    setAnswers([]);
+    setCurrentIndex(0);
+    localStorage.removeItem("quizData_multiple_5"); // hapus cache agar ambil soal baru
+    window.location.reload();
+  };
+
   const currentQuestion = questions[currentIndex] || null;
 
   return {
@@ -54,8 +70,11 @@ export const useQuiz = () => {
     currentIndex,
     totalQuestions: questions.length,
     answers,
+    answeredCount: answers.length,
     loading,
     error,
     handleAnswer,
+    getResults,
+    resetQuiz,
   };
 };
