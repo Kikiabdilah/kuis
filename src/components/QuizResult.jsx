@@ -24,7 +24,7 @@ export default function QuizResult({ totalQuestions, answers }) {
         </button>
         <button className="ml-4 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md" onClick={() => {
           clearProgress();
-          window.location.href = "/";
+          window.location.href = "/home";
         }}>
         Beranda
         </button>
